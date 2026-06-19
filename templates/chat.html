@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="chat-container">
+
+    <header class="header">
+        <div class="brand">
+            <div class="logo">K</div>
+            <div>
+                <h2>Medical Chatbbot RAG</h2>
+                <p>Document Search & Q&A</p>
+            </div>
+        </div>
+
+        <span class="status">● Connected</span>
+    </header>
+
+    <main class="chat-body">
+        <div id="chat-box">
+
+            <div class="welcome">
+                <h1>Search Your Knowledge Base</h1>
+                <p>Ask questions from PDFs, reports, manuals and documents.</p>
+
+                <div class="suggestions">
+                    <button type="button">Summarize the report</button>
+                    <button type="button">Find key insights</button>
+                    <button type="button">Explain the policy</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="chat-footer">
+        <form id="chat-form">
+            <input
+                type="text"
+                id="user-input"
+                placeholder="Ask a question..."
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">Send</button>
+        </form>
+    </footer>
+
+</div>
+
+<script>
+document.getElementById("chat-form").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const inputBox = document.getElementById("user-input");
+    const message = inputBox.value.trim();
+
+    if (!message) return;
+
+    const chatBox = document.getElementById("chat-box");
+
+    // Show user message
+    chatBox.innerHTML += `
+        <div class="message user">
+            <div class="bubble">
+                ${message}
+            </div>
+        </div>
+    `;
+
+    // Clear input field
+    inputBox.value = "";
+
+    // Auto scroll
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+
+        const response = await fetch("/get", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                msg: message
+            })
+        });
+
+        const data = await response.json();
+
+        // Show bot response
+        chatBox.innerHTML += `
+            <div class="message bot">
+                <div class="bubble">
+                    ${data.response}
+                </div>
+            </div>
+        `;
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch(error) {
+
+        chatBox.innerHTML += `
+            <div class="message bot">
+                <div class="bubble">
+                    Error connecting to server.
+                </div>
+            </div>
+        `;
+
+        console.error(error);
+    }
+
+});
+</script>
+
+</body>
+</html>
